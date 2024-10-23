@@ -1,0 +1,56 @@
+###
+POST http://127.0.0.1:8090/api/v1/users/login
+Content-Type: application/json
+
+{
+  "username": "Ter444",
+  "content": "content"
+}
+
+###
+POST http://127.0.0.1:8090/api/v1/users/create
+Content-Type: application/json
+
+{
+  "username": "nikita",
+  "password": "nikita"
+}
+
+### GET request to example server
+GET http://127.0.0.1:8090/api/v1/posts?limit=0
+
+###
+GET http://127.0.0.1:8090/api/v1/posts/52
+
+###
+POST http://127.0.0.1:8090/api/v1/posts
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuaWtpdGEiLCJpYXQiOjE3Mjk2NzU0MjksImV4cCI6MTcyOTcxMTQyOX0.y3Vzsdz87sPOW3wXOxT3m5Xlaooz25IgWYGGdx4HH6A
+Content-Type: application/json
+
+{
+  "title": "Ter444",
+  "content": "content"
+}
+###
+PUT http://127.0.0.1:8090/api/v1/posts/52
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuaWtpdGEiLCJpYXQiOjE3Mjk2NzU0MjksImV4cCI6MTcyOTcxMTQyOX0.y3Vzsdz87sPOW3wXOxT3m5Xlaooz25IgWYGGdx4HH6A
+Content-Type: application/json
+
+{
+  "title": "Ter888",
+  "content": "content2"
+}
+###
+DELETE http://127.0.0.1:8090/api/v1/posts/52
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuaWtpdGEiLCJpYXQiOjE3Mjk2NzU0MjksImV4cCI6MTcyOTcxMTQyOX0.y3Vzsdz87sPOW3wXOxT3m5Xlaooz25IgWYGGdx4HH6A
+
+###
+POST http://127.0.0.1:8090/api/v1/users/login
+Content-Type: application/json
+
+{
+  "username": "nikita@gmail.com",
+  "password": "nikita"
+}
+
+###
