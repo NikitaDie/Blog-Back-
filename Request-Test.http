@@ -12,15 +12,15 @@ POST http://127.0.0.1:8090/api/v1/users/create
 Content-Type: application/json
 
 {
-  "username": "nikita",
-  "password": "nikita"
+  "username": "user@gmail.com",
+  "password": "user"
 }
 
 ### GET request to example server
 GET http://127.0.0.1:8090/api/v1/posts?limit=0
 
 ###
-GET http://127.0.0.1:8090/api/v1/posts/52
+GET http://127.0.0.1:8090/api/v1/posts/
 
 ###
 POST http://127.0.0.1:8090/api/v1/posts
@@ -49,8 +49,8 @@ POST http://127.0.0.1:8090/api/v1/users/login
 Content-Type: application/json
 
 {
-  "username": "nikita@gmail.com",
-  "password": "nikita"
+  "username": "user-name@gmail.com",
+  "password": "NewUser456852!"
 }
 
 ###

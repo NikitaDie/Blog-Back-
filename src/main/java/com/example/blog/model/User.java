@@ -30,8 +30,12 @@ public class User implements UserDetails {
 
     @Setter
     @NotNull
-    @Column(unique = true)
     private String username;
+
+    @Setter
+    @NotNull
+    @Column(unique = true)
+    private String login;
 
     @Setter
     @NotNull
@@ -50,13 +54,14 @@ public class User implements UserDetails {
     public User(UserApi userApi) {
         this.id = userApi.getId();
         this.username = userApi.getUsername();
+        this.login = userApi.getLogin();
         this.password = userApi.getPassword();
         this.authorities = userApi.getAuthorities();
     }
 
     // Convert to UserApi
     public UserApi toApi() {
-        return new UserApi(id, username, password, posts, authorities);
+        return new UserApi(id, username, login, password, posts, authorities);
     }
 
     @Override

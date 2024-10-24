@@ -1,7 +1,8 @@
 package com.example.blog.exception.core;
 
+import com.example.blog.exception.InvalidDataException;
 import com.example.blog.exception.PostException;
-import com.example.blog.exception.WrongPasswordException;
+import com.example.blog.exception.UnauthorizedException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -46,9 +47,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(apiError);
     }
 
-    @ExceptionHandler(WrongPasswordException.class)
-    protected ResponseEntity<Object> handleWrongPassword(WrongPasswordException ex) {
+    @ExceptionHandler(UnauthorizedException.class)
+    protected ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException ex) {
         ApiError apiError = new ApiError(HttpStatus.UNAUTHORIZED);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(InvalidDataException.class)
+    protected ResponseEntity<Object> handleInvalidDataException(InvalidDataException ex) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }

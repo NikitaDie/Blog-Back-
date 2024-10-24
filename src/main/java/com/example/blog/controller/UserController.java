@@ -21,9 +21,9 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserApi request) {
-        UserApi user = service.login(request.getUsername(), request.getPassword());
+        UserApi user = service.login(request.getLogin(), request.getPassword());
         if (user != null) {
-            String token = jwtUtil.generateToken(request.getUsername());
+            String token = jwtUtil.generateToken(request.getLogin());
             return ResponseEntity.ok(token);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -32,9 +32,9 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<String> create(@RequestBody UserApi request) {
-        UserApi newUser = service.create(request.getUsername(), request.getPassword());
+        UserApi newUser = service.create(request);
         if (newUser != null) {
-            String token = jwtUtil.generateToken(request.getUsername());
+            String token = jwtUtil.generateToken(request.getLogin());
             return ResponseEntity.status(HttpStatus.CREATED).body(token);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

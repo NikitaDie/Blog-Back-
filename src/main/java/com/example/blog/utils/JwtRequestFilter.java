@@ -1,6 +1,5 @@
 package com.example.blog.utils;
 
-import com.example.blog.service.IPostService;
 import com.example.blog.service.IUserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,18 +27,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         final String authorizationHeader = request.getHeader("Authorization");
 
-        String username = null;
+        String login = null;
         String jwt = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+            login = jwtUtil.extractUsername(jwt);
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (login != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Load user details and validate token
-            if (jwtUtil.validateToken(jwt, username)) {
-                UserDetails userDetails = userService.findUserByUsername(username);
+            if (jwtUtil.validateToken(jwt, login)) {
+                UserDetails userDetails = userService.findUserByLogin(login);
                 // Set authentication in context
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

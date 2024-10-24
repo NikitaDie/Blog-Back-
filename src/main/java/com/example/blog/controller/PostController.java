@@ -1,6 +1,9 @@
 package com.example.blog.controller;
 
+import com.example.blog.exception.UnauthorizedException;
 import com.example.blog.model.PostApi;
+import com.example.blog.model.User;
+import com.example.blog.model.UserApi;
 import com.example.blog.service.IPostService;
 import com.example.blog.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +45,7 @@ public class PostController {
     public ResponseEntity<PostApi> createPost(@RequestBody PostApi newPost) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        newPost.setCreator(userService.findUserByUsername(username).toApi());
+        newPost.setCreator(((User) userService.loadUserByUsername(username)).toApi());
         PostApi createdPost = postService.createPost(newPost).toApi();
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
@@ -51,7 +54,10 @@ public class PostController {
     public ResponseEntity<Void>  updatePost(@PathVariable long id, @RequestBody PostApi updatedPost) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        updatedPost.setCreator(userService.findUserByUsername(username).toApi());
+
+        checkPermissions(id, username);
+
+        updatedPost.setCreator(((User) userService.loadUserByUsername(username)).toApi());
         updatedPost.setId(id);
         postService.updatePost(updatedPost);
         return ResponseEntity.noContent().build();
@@ -60,8 +66,22 @@ public class PostController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable long id)
     {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        checkPermissions(id, username);
+
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private void checkPermissions(long postId, String username) {
+        boolean isAdmin = userService.loadUserByUsername(username).getAuthorities()
+                .stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !postService.getPost(postId).getCreator().getUsername().equals(username)) {
+            throw new UnauthorizedException("You are not permitted to edit or delete other posts!");
+        }
     }
 
 }
