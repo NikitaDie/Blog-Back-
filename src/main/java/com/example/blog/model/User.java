@@ -30,6 +30,7 @@ public class User implements UserDetails {
 
     @Setter
     @NotNull
+    @Column(unique = true)
     private String username;
 
     @Setter

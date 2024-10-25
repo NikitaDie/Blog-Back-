@@ -58,28 +58,41 @@ public class UserService implements IUserService {
     public UserApi create(UserApi newUser, String siteURL) {
         validateUserData(newUser);
 
-        try {
-            findUserByLogin(newUser.getLogin());
-        } catch (NotPresentedException e) {
-            User user = User.builder()
-                    .username(newUser.getUsername())
-                    .login(newUser.getLogin())
-                    .password(new BCryptPasswordEncoder().encode(newUser.getPassword()))
-                    .authorities("ROLE_USER")
-                    .verificationCode(RandomStringUtils.randomAlphanumeric(64))
-                    .enabled(false)
-                    .build();
-            userRepo.save(user);
-
-            try {
-                sendVerificationEmail(user, siteURL);
-            } catch (MessagingException | UnsupportedEncodingException ex) {
-                throw new RuntimeException(ex);
-            }
-
-            return user.toApi();
+        if (userExists(newUser.getLogin(), newUser.getUsername())) {
+            throw new NotAvailableException("The user with such username already exists");
         }
-        throw new NotAvailableException("The user with such username already exists");
+
+        User user = User.builder()
+                .username(newUser.getUsername())
+                .login(newUser.getLogin())
+                .password(new BCryptPasswordEncoder().encode(newUser.getPassword()))
+                .authorities("ROLE_USER")
+                .verificationCode(RandomStringUtils.randomAlphanumeric(64))
+                .enabled(false)
+                .build();
+        userRepo.save(user);
+
+        try {
+            sendVerificationEmail(user, siteURL);
+        } catch (MessagingException | UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        return user.toApi();
+    }
+
+    private boolean userExists(String login, String username) {
+        boolean exists = false;
+        try {
+            findUserByLogin(login);
+            exists = true;
+        } catch (NotPresentedException _) {}
+        try {
+            loadUserByUsername(username);
+            exists = true;
+        } catch (NotPresentedException _) {}
+
+        return exists;
     }
 
     private void validateUserData(UserApi newUser) {

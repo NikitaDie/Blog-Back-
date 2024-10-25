@@ -18,6 +18,7 @@ public class Post {
 
     @Setter
     @NotNull
+    @Column(unique = true)
     private String title;
 
     @Setter
