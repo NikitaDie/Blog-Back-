@@ -1,22 +1,30 @@
 package com.example.blog.service;
 
-import com.example.blog.exception.InvalidDataException;
-import com.example.blog.exception.NotAvailableException;
-import com.example.blog.exception.NotPresentedException;
-import com.example.blog.exception.WrongPasswordException;
+import com.example.blog.exception.*;
 import com.example.blog.model.User;
 import com.example.blog.model.UserApi;
 import com.example.blog.repository.UserRepo;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+
 @Service
 public class UserService implements IUserService {
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
 
     public User findUserByLogin(String login) {
         return userRepo.findByLogin(login).orElseThrow(
@@ -37,6 +45,9 @@ public class UserService implements IUserService {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
         if (encoder.matches(password, user.getPassword())) {
+            if (!user.isEnabled())
+                throw new UnauthorizedException("The user is not activated. Check your email for activation letter.");
+
             return user.toApi();
         } else {
             throw new WrongPasswordException("Wrong password");
@@ -44,18 +55,28 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserApi create(UserApi newUser) {
+    public UserApi create(UserApi newUser, String siteURL) {
         validateUserData(newUser);
 
         try {
-            findUserByLogin(newUser.getUsername());
+            findUserByLogin(newUser.getLogin());
         } catch (NotPresentedException e) {
             User user = User.builder()
                     .username(newUser.getUsername())
+                    .login(newUser.getLogin())
                     .password(new BCryptPasswordEncoder().encode(newUser.getPassword()))
                     .authorities("ROLE_USER")
+                    .verificationCode(RandomStringUtils.randomAlphanumeric(64))
+                    .enabled(false)
                     .build();
             userRepo.save(user);
+
+            try {
+                sendVerificationEmail(user, siteURL);
+            } catch (MessagingException | UnsupportedEncodingException ex) {
+                throw new RuntimeException(ex);
+            }
+
             return user.toApi();
         }
         throw new NotAvailableException("The user with such username already exists");
@@ -93,5 +114,50 @@ public class UserService implements IUserService {
         return userRepo.findById(id).orElseThrow(
                 () -> new NotPresentedException("There is not user with such id: " + id)
         ).toApi();
+    }
+
+    public boolean verify(String verificationCode) {
+        User user = userRepo.findByVerificationCode(verificationCode);
+
+        if (user == null || user.isEnabled()) {
+            return false;
+        } else {
+            user.setVerificationCode(null);
+            user.setEnabled(true);
+            userRepo.save(user);
+
+            return true;
+        }
+
+    }
+
+    private void sendVerificationEmail(User user, String siteURL)
+            throws MessagingException, UnsupportedEncodingException {
+        String toAddress = user.getLogin();
+        String fromAddress = "nik0609tak@gmail.com";
+        String senderName = "NikitaDeveloper";
+        String subject = "Please verify your registration";
+        String content = "Dear [[name]],<br>"
+                + "Please click the link below to verify your registration:<br>"
+                + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
+                + "Thank you,<br>"
+                + "NikitaDeveloper";
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setFrom(fromAddress, senderName);
+        helper.setTo(toAddress);
+        helper.setSubject(subject);
+
+        content = content.replace("[[name]]", user.getUsername());
+        String verifyURL = siteURL + "/api/v1/users/verify?code=" + user.getVerificationCode();
+
+        content = content.replace("[[URL]]", verifyURL);
+
+        helper.setText(content, true);
+
+        mailSender.send(message);
+
     }
 }

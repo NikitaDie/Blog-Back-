@@ -3,7 +3,6 @@ package com.example.blog.controller;
 import com.example.blog.exception.UnauthorizedException;
 import com.example.blog.model.PostApi;
 import com.example.blog.model.User;
-import com.example.blog.model.UserApi;
 import com.example.blog.service.IPostService;
 import com.example.blog.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;

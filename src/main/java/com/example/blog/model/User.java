@@ -44,6 +44,13 @@ public class User implements UserDetails {
     @NotNull
     private String authorities;
 
+    @Setter
+    @Column(name = "verification_code", length = 64)
+    private String verificationCode;
+
+    @Setter
+    private boolean enabled;
+
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Post> posts;
@@ -78,21 +85,21 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Change to your actual logic if necessary
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Change to your actual logic if necessary
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Change to your actual logic if necessary
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true; // Change to your actual logic if necessary
+        return enabled;
     }
 }
